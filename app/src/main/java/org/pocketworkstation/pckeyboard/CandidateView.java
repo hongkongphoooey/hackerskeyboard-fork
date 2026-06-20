@@ -109,13 +109,12 @@ public class CandidateView extends View {
         mPreviewPopup.setContentView(mPreviewText);
         mPreviewPopup.setBackgroundDrawable(null);
         mPreviewPopup.setAnimationStyle(R.style.KeyPreviewAnimation);
-        // Enable clipping for Android P, keep disabled for older versions.
-        boolean clippingEnabled = (Build.VERSION.SDK_INT >= 28 /* Build.VERSION_CODES.P */);
-        mPreviewPopup.setClippingEnabled(clippingEnabled);
-        mColorNormal = res.getColor(R.color.candidate_normal);
-        mColorRecommended = res.getColor(R.color.candidate_recommended);
-        mColorOther = res.getColor(R.color.candidate_other);
-        mDivider = res.getDrawable(R.drawable.keyboard_suggest_strip_divider);
+        // minSdk is 29 (>= P), so clipping is always enabled.
+        mPreviewPopup.setClippingEnabled(true);
+        mColorNormal = res.getColor(R.color.candidate_normal, null);
+        mColorRecommended = res.getColor(R.color.candidate_recommended, null);
+        mColorOther = res.getColor(R.color.candidate_other, null);
+        mDivider = res.getDrawable(R.drawable.keyboard_suggest_strip_divider, null);
         mAddToDictionaryHint = res.getString(R.string.hint_add_to_dictionary);
 
         mPaint = new Paint();

@@ -42,11 +42,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -149,8 +150,8 @@ public class LatinIME extends InputMethodService implements
     static final int ASCII_PERIOD = '.';
 
     // Contextual menu positions
-    private static final int POS_METHOD = 0;
-    private static final int POS_SETTINGS = 1;
+    // mOptionsDialog may be shown e.g. from onOptionKeyLongPressed; isShowingOptionDialog()
+    // guards against re-entrant key handling while a dialog is up.
 
     // private LatinKeyboardView mInputView;
     private LinearLayout mCandidateViewContainer;
@@ -412,7 +413,7 @@ public class LatinIME extends InputMethodService implements
         pFilter.addAction("android.intent.action.PACKAGE_ADDED");
         pFilter.addAction("android.intent.action.PACKAGE_REPLACED");
         pFilter.addAction("android.intent.action.PACKAGE_REMOVED");
-        registerReceiver(mPluginManager, pFilter);
+        registerReceiver(mPluginManager, pFilter, RECEIVER_NOT_EXPORTED);
 
         LatinIMEUtil.GCUtils.getInstance().reset();
         boolean tryGC = true;
@@ -431,7 +432,7 @@ public class LatinIME extends InputMethodService implements
         // register to receive ringer mode changes for silent mode
         IntentFilter filter = new IntentFilter(
                 AudioManager.RINGER_MODE_CHANGED_ACTION);
-        registerReceiver(mReceiver, filter);
+        registerReceiver(mReceiver, filter, RECEIVER_NOT_EXPORTED);
         prefs.registerOnSharedPreferenceChangeListener(this);
         setNotification(mKeyboardNotification);
     }
@@ -460,19 +461,14 @@ public class LatinIME extends InputMethodService implements
     }
 
     private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.notification_channel_name);
-            String description = getString(R.string.notification_channel_description);
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
-            channel.setDescription(description);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
+        // NotificationChannel is required since API 26; minSdk is now 29, so always create it.
+        CharSequence name = getString(R.string.notification_channel_name);
+        String description = getString(R.string.notification_channel_description);
+        int importance = NotificationManager.IMPORTANCE_LOW;
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+        channel.setDescription(description);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 
     private void setNotification(boolean visible) {
@@ -489,15 +485,15 @@ public class LatinIME extends InputMethodService implements
             mNotificationReceiver = new NotificationReceiver(this);
             final IntentFilter pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
             pFilter.addAction(NotificationReceiver.ACTION_SETTINGS);
-            registerReceiver(mNotificationReceiver, pFilter);
+            registerReceiver(mNotificationReceiver, pFilter, RECEIVER_NOT_EXPORTED);
             
             Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
-            PendingIntent contentIntent = PendingIntent.getBroadcast(getApplicationContext(), 1, notificationIntent, 0);
+            PendingIntent contentIntent = PendingIntent.getBroadcast(getApplicationContext(), 1, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
             //PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
             Intent configIntent = new Intent(NotificationReceiver.ACTION_SETTINGS);
             PendingIntent configPendingIntent =
-                    PendingIntent.getBroadcast(getApplicationContext(), 2, configIntent, 0);
+                    PendingIntent.getBroadcast(getApplicationContext(), 2, configIntent, PendingIntent.FLAG_IMMUTABLE);
 
             String title = "Show Hacker's Keyboard";
             String body = "Select this to open the keyboard. Disable in settings.";
@@ -1460,17 +1456,9 @@ public class LatinIME extends InputMethodService implements
     }
 
     private void onOptionKeyPressed() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            // Input method selector is available as a button in the soft key area, so just launch
-            // HK settings directly. This also works around the alert dialog being clipped
-            // in Android O.
-            startActivity(new Intent(this, LatinIMESettings.class));
-        } else {
-            // Show an options menu with choices to change input method or open HK settings.
-            if (!isShowingOptionDialog()) {
-                 showOptionsMenu();
-            }
-        }
+        // minSdk is 29 (>= N). Launch HK settings directly; also avoids the alert dialog
+        // being clipped in Android O and later.
+        startActivity(new Intent(this, LatinIMESettings.class));
     }
 
     private void onOptionKeyLongPressed() {
@@ -3311,7 +3299,9 @@ public class LatinIME extends InputMethodService implements
     void vibrate(int len) {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
-            v.vibrate(len);
+            // Vibrator.vibrate(long) is deprecated since API 26.
+            // VibrationEffect is available from API 26; minSdk is 29, so always use it.
+            v.vibrate(VibrationEffect.createOneShot(len, VibrationEffect.DEFAULT_AMPLITUDE));
             return;
         }
 
@@ -3436,41 +3426,6 @@ public class LatinIME extends InputMethodService implements
 
     private boolean isSuggestedPunctuation(int code) {
         return sKeyboardSettings.suggestedPunctuation.contains(String.valueOf((char) code));
-    }
-
-    private void showOptionsMenu() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true);
-        builder.setIcon(R.drawable.ic_dialog_keyboard);
-        builder.setNegativeButton(android.R.string.cancel, null);
-        CharSequence itemSettings = getString(R.string.english_ime_settings);
-        CharSequence itemInputMethod = getString(R.string.selectInputMethod);
-        builder.setItems(new CharSequence[] { itemInputMethod, itemSettings },
-                new DialogInterface.OnClickListener() {
-
-                    public void onClick(DialogInterface di, int position) {
-                        di.dismiss();
-                        switch (position) {
-                        case POS_SETTINGS:
-                            launchSettings();
-                            break;
-                        case POS_METHOD:
-                            ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
-                                    .showInputMethodPicker();
-                            break;
-                        }
-                    }
-                });
-        builder.setTitle(mResources
-                .getString(R.string.english_ime_input_options));
-        mOptionsDialog = builder.create();
-        Window window = mOptionsDialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
-        lp.token = mKeyboardSwitcher.getInputView().getWindowToken();
-        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
-        window.setAttributes(lp);
-        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        mOptionsDialog.show();
     }
 
     public void changeKeyboardMode() {

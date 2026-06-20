@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.os.Build;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -50,8 +51,16 @@ public class PluginManager extends BroadcastReceiver {
 
     static void getSoftKeyboardDictionaries(PackageManager packageManager) {
         Intent dictIntent = new Intent(SOFTKEYBOARD_INTENT_DICT);
-        List<ResolveInfo> dictPacks = packageManager.queryBroadcastReceivers(
-                dictIntent, PackageManager.GET_META_DATA);
+        // queryBroadcastReceivers(Intent, int) is deprecated on API 33+; use ResolveInfoFlags.
+        List<ResolveInfo> dictPacks;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            dictPacks = packageManager.queryBroadcastReceivers(
+                    dictIntent, PackageManager.ResolveInfoFlags.of(PackageManager.GET_META_DATA));
+        } else {
+            //noinspection deprecation
+            dictPacks = packageManager.queryBroadcastReceivers(
+                    dictIntent, PackageManager.GET_META_DATA);
+        }
         for (ResolveInfo ri : dictPacks) {
             ApplicationInfo appInfo = ri.activityInfo.applicationInfo;
             String pkgName = appInfo.packageName;
@@ -120,7 +129,15 @@ public class PluginManager extends BroadcastReceiver {
 
     static void getHKDictionaries(PackageManager packageManager) {
         Intent dictIntent = new Intent(HK_INTENT_DICT);
-        List<ResolveInfo> dictPacks = packageManager.queryIntentActivities(dictIntent, 0);
+        // queryIntentActivities(Intent, int) is deprecated on API 33+; use ResolveInfoFlags.
+        List<ResolveInfo> dictPacks;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            dictPacks = packageManager.queryIntentActivities(
+                    dictIntent, PackageManager.ResolveInfoFlags.of(0));
+        } else {
+            //noinspection deprecation
+            dictPacks = packageManager.queryIntentActivities(dictIntent, 0);
+        }
         for (ResolveInfo ri : dictPacks) {
             ApplicationInfo appInfo = ri.activityInfo.applicationInfo;
             String pkgName = appInfo.packageName;

@@ -124,22 +124,22 @@ public class LatinKeyboard extends Keyboard {
         mContext = context;
         mMode = mode;
         mRes = res;
-        mShiftLockIcon = res.getDrawable(R.drawable.sym_keyboard_shift_locked);
-        mShiftLockPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_shift_locked);
+        mShiftLockIcon = res.getDrawable(R.drawable.sym_keyboard_shift_locked, null);
+        mShiftLockPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_shift_locked, null);
         setDefaultBounds(mShiftLockPreviewIcon);
-        mSpaceIcon = res.getDrawable(R.drawable.sym_keyboard_space);
-        mSpaceAutoCompletionIndicator = res.getDrawable(R.drawable.sym_keyboard_space_led);
-        mSpacePreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_space);
-        mMicIcon = res.getDrawable(R.drawable.sym_keyboard_mic);
-        mMicPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_mic);
-        mSettingsIcon = res.getDrawable(R.drawable.sym_keyboard_settings);
-        mSettingsPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_settings);
+        mSpaceIcon = res.getDrawable(R.drawable.sym_keyboard_space, null);
+        mSpaceAutoCompletionIndicator = res.getDrawable(R.drawable.sym_keyboard_space_led, null);
+        mSpacePreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_space, null);
+        mMicIcon = res.getDrawable(R.drawable.sym_keyboard_mic, null);
+        mMicPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_mic, null);
+        mSettingsIcon = res.getDrawable(R.drawable.sym_keyboard_settings, null);
+        mSettingsPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_settings, null);
         setDefaultBounds(mMicPreviewIcon);
-        mButtonArrowLeftIcon = res.getDrawable(R.drawable.sym_keyboard_language_arrows_left);
-        mButtonArrowRightIcon = res.getDrawable(R.drawable.sym_keyboard_language_arrows_right);
-        m123MicIcon = res.getDrawable(R.drawable.sym_keyboard_123_mic);
-        m123MicPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_123_mic);
-        mHintIcon = res.getDrawable(R.drawable.hint_popup);
+        mButtonArrowLeftIcon = res.getDrawable(R.drawable.sym_keyboard_language_arrows_left, null);
+        mButtonArrowRightIcon = res.getDrawable(R.drawable.sym_keyboard_language_arrows_right, null);
+        m123MicIcon = res.getDrawable(R.drawable.sym_keyboard_123_mic, null);
+        m123MicPreviewIcon = res.getDrawable(R.drawable.sym_keyboard_feedback_123_mic, null);
+        mHintIcon = res.getDrawable(R.drawable.hint_popup, null);
         setDefaultBounds(m123MicPreviewIcon);
         sSpacebarVerticalCorrection = res.getDimensionPixelOffset(
                 R.dimen.spacebar_vertical_correction);
@@ -202,8 +202,8 @@ public class LatinKeyboard extends Keyboard {
                     break;
                 case EditorInfo.IME_ACTION_SEARCH:
                     mEnterKey.iconPreview = res.getDrawable(
-                            R.drawable.sym_keyboard_feedback_search);
-                    mEnterKey.icon = res.getDrawable(R.drawable.sym_keyboard_search);
+                            R.drawable.sym_keyboard_feedback_search, null);
+                    mEnterKey.icon = res.getDrawable(R.drawable.sym_keyboard_search, null);
                     mEnterKey.label = null;
                     break;
                 case EditorInfo.IME_ACTION_SEND:
@@ -214,8 +214,8 @@ public class LatinKeyboard extends Keyboard {
                 default:
                     // Keep Return key in IM mode, we have a dedicated smiley key.
                     mEnterKey.iconPreview = res.getDrawable(
-                            R.drawable.sym_keyboard_feedback_return);
-                    mEnterKey.icon = res.getDrawable(R.drawable.sym_keyboard_return);
+                            R.drawable.sym_keyboard_feedback_return, null);
+                    mEnterKey.icon = res.getDrawable(R.drawable.sym_keyboard_return, null);
                     mEnterKey.label = null;
                     break;
             }
@@ -409,7 +409,7 @@ public class LatinKeyboard extends Keyboard {
                 mSpaceKey.icon = new BitmapDrawable(mRes,
                         drawSpaceBar(OPACITY_FULLY_OPAQUE, isAutoCompletion));
             } else {
-                mSpaceKey.icon = mRes.getDrawable(R.drawable.sym_keyboard_space);
+                mSpaceKey.icon = mRes.getDrawable(R.drawable.sym_keyboard_space, null);
             }
         }
     }
@@ -430,7 +430,7 @@ public class LatinKeyboard extends Keyboard {
         hintIcon.getPadding(hintIconPadding);
         final Bitmap buffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(buffer);
-        canvas.drawColor(mRes.getColor(R.color.latinkeyboard_transparent), PorterDuff.Mode.CLEAR);
+        canvas.drawColor(mContext.getColor(R.color.latinkeyboard_transparent), PorterDuff.Mode.CLEAR);
 
         // Draw main icon at the center of the key visual
         // Assuming the hintIcon shares the same padding with the key's background drawable
@@ -497,7 +497,7 @@ public class LatinKeyboard extends Keyboard {
         final int height = mSpaceIcon.getIntrinsicHeight();
         final Bitmap buffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(buffer);
-        canvas.drawColor(mRes.getColor(R.color.latinkeyboard_transparent), PorterDuff.Mode.CLEAR);
+        canvas.drawColor(mContext.getColor(R.color.latinkeyboard_transparent), PorterDuff.Mode.CLEAR);
 
         // If application locales are explicitly selected.
         if (mLocale != null) {
@@ -515,12 +515,12 @@ public class LatinKeyboard extends Keyboard {
                     allowVariableTextSize);
 
             // Draw language text with shadow
-            final int shadowColor = mRes.getColor(R.color.latinkeyboard_bar_language_shadow_white);
+            final int shadowColor = mContext.getColor(R.color.latinkeyboard_bar_language_shadow_white);
             final float baseline = height * SPACEBAR_LANGUAGE_BASELINE;
             final float descent = paint.descent();
             paint.setColor(shadowColor);
             canvas.drawText(language, width / 2, baseline - descent - 1, paint);
-            paint.setColor(mRes.getColor(R.color.latinkeyboard_dim_color_white));
+            paint.setColor(mContext.getColor(R.color.latinkeyboard_dim_color_white));
 
             canvas.drawText(language, width / 2, baseline - descent, paint);
 
@@ -874,15 +874,15 @@ public class LatinKeyboard extends Keyboard {
             mHeight = height;
             mTextPaint = new TextPaint();
             mTextPaint.setTextSize(getTextSizeFromTheme(android.R.style.TextAppearance_Medium, 18));
-            mTextPaint.setColor(mRes.getColor(R.color.latinkeyboard_transparent));
+            mTextPaint.setColor(mContext.getColor(R.color.latinkeyboard_transparent));
             mTextPaint.setTextAlign(Align.CENTER);
             mTextPaint.setAlpha(OPACITY_FULLY_OPAQUE);
             mTextPaint.setAntiAlias(true);
             mMiddleX = (mWidth - mBackground.getIntrinsicWidth()) / 2;
             mLeftDrawable =
-                    mRes.getDrawable(R.drawable.sym_keyboard_feedback_language_arrows_left);
+                    mRes.getDrawable(R.drawable.sym_keyboard_feedback_language_arrows_left, null);
             mRightDrawable =
-                    mRes.getDrawable(R.drawable.sym_keyboard_feedback_language_arrows_right);
+                    mRes.getDrawable(R.drawable.sym_keyboard_feedback_language_arrows_right, null);
             mThreshold = ViewConfiguration.get(mContext).getScaledTouchSlop();
         }
 
@@ -922,7 +922,7 @@ public class LatinKeyboard extends Keyboard {
                 }
                 // Draw language text with shadow
                 final float baseline = mHeight * SPACEBAR_LANGUAGE_BASELINE - paint.descent();
-                paint.setColor(mRes.getColor(R.color.latinkeyboard_feedback_language_text));
+                paint.setColor(mContext.getColor(R.color.latinkeyboard_feedback_language_text));
                 canvas.drawText(mCurrentLanguage, width / 2 + diff, baseline, paint);
                 canvas.drawText(mNextLanguage, diff - width / 2, baseline, paint);
                 canvas.drawText(mPrevLanguage, diff + width + width / 2, baseline, paint);

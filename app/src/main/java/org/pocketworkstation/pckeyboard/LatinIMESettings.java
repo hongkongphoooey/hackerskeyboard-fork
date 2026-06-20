@@ -19,7 +19,7 @@ package org.pocketworkstation.pckeyboard;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.app.Dialog;
+import android.app.AlertDialog;
 import android.app.backup.BackupManager;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -49,8 +49,7 @@ public class LatinIMESettings extends PreferenceActivity
 
     private static final String TAG = "LatinIMESettings";
 
-    // Dialog ids
-    private static final int VOICE_INPUT_CONFIRM_DIALOG = 0;
+    // (No longer uses Activity.showDialog — replaced by AlertDialog.Builder)
 
     private CheckBoxPreference mQuickFixes;
     private ListPreference mVoicePreference;
@@ -115,10 +114,10 @@ public class LatinIMESettings extends PreferenceActivity
 
         String version = "";
         try {
-            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
             version = info.versionName;
             boolean isOfficial = false;
-            for (Signature sig : info.signatures) {
+            for (Signature sig : info.signingInfo.getApkContentsSigners()) {
                 byte[] b = sig.toByteArray();
                 int out = 0;
                 for (int i = 0; i < b.length; ++i) {
@@ -254,22 +253,25 @@ public class LatinIMESettings extends PreferenceActivity
 
     private void showVoiceConfirmation() {
         mOkClicked = false;
-        showDialog(VOICE_INPUT_CONFIRM_DIALOG);
+        // Activity.showDialog() is deprecated since API 13; use AlertDialog.Builder directly.
+        String message = getString(R.string.voice_warning_may_not_understand)
+                + "\n\n" + getString(R.string.voice_warning_how_to_turn_off);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.voice_warning_title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    mOkClicked = true;
+                    dialog.dismiss();
+                })
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss())
+                .setOnDismissListener(this)
+                .show();
     }
 
     private void updateVoiceModeSummary() {
         mVoicePreference.setSummary(
                 getResources().getStringArray(R.array.voice_input_modes_summary)
                 [mVoicePreference.findIndexOfValue(mVoicePreference.getValue())]);
-    }
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            default:
-                Log.e(TAG, "unknown dialog " + id);
-                return null;
-        }
     }
 
     public void onDismiss(DialogInterface dialog) {
