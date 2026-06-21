@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 34
     namespace 'org.pocketworkstation.pckeyboard'
+
     defaultConfig {
         applicationId 'org.pocketworkstation.pckeyboard'
         minSdkVersion 29
@@ -16,21 +17,40 @@ android {
             }
         }
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"
         }
     }
-    productFlavors {
+
+    // Silence the "source/target value 8 is obsolete" javac warnings.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
+
     lintOptions {
         checkReleaseBuilds false
+    }
+}
+
+// Resolve the Kotlin stdlib split-artifact conflict that surfaces when AndroidX
+// libraries transitively pull in kotlin-stdlib-jdk7:1.6.0 / jdk8:1.6.0 alongside
+// the newer kotlin-stdlib:1.8.22 (which already merges those split artifacts).
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.jetbrains.kotlin') {
+            details.useVersion '1.8.22'
+            details.because 'Align all Kotlin stdlib artifacts to avoid duplicate-class errors'
+        }
     }
 }
 
