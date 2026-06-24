@@ -93,7 +93,7 @@ public class LatinIMEUtil {
             return sRingCharBuffer;
         }
         public static RingCharBuffer init(Context context, boolean enabled) {
-            sRingCharBuffer.mContext = context;
+            sRingCharBuffer.mContext = context.getApplicationContext();
             sRingCharBuffer.mEnabled = enabled;
             return sRingCharBuffer;
         }

@@ -36,6 +36,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 
+import androidx.core.content.res.ResourcesCompat;
+
 import org.pocketworkstation.pckeyboard.Keyboard.Key;
 
 import android.os.Handler;
@@ -53,6 +55,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.Normalizer;
@@ -287,34 +290,41 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
     };
     private final ColorMatrixColorFilter mInvertingColorFilter = new ColorMatrixColorFilter(INVERTING_MATRIX);
 
-    private final UIHandler mHandler = new UIHandler();
+    private final UIHandler mHandler = new UIHandler(this);
 
-    class UIHandler extends Handler {
+    static class UIHandler extends Handler {
         private static final int MSG_POPUP_PREVIEW = 1;
         private static final int MSG_DISMISS_PREVIEW = 2;
         private static final int MSG_REPEAT_KEY = 3;
         private static final int MSG_LONGPRESS_KEY = 4;
 
+        private final WeakReference<LatinKeyboardBaseView> mView;
         private boolean mInKeyRepeat;
+
+        UIHandler(LatinKeyboardBaseView view) {
+            mView = new WeakReference<>(view);
+        }
 
         @Override
         public void handleMessage(Message msg) {
+            LatinKeyboardBaseView view = mView.get();
+            if (view == null) return;
             switch (msg.what) {
                 case MSG_POPUP_PREVIEW:
-                    showKey(msg.arg1, (PointerTracker)msg.obj);
+                    view.showKey(msg.arg1, (PointerTracker)msg.obj);
                     break;
                 case MSG_DISMISS_PREVIEW:
-                    mPreviewPopup.dismiss();
+                    view.mPreviewPopup.dismiss();
                     break;
                 case MSG_REPEAT_KEY: {
                     final PointerTracker tracker = (PointerTracker)msg.obj;
                     tracker.repeatKey(msg.arg1);
-                    startKeyRepeatTimer(mKeyRepeatInterval, msg.arg1, tracker);
+                    view.startKeyRepeatTimer(view.mKeyRepeatInterval, msg.arg1, tracker);
                     break;
                 }
                 case MSG_LONGPRESS_KEY: {
                     final PointerTracker tracker = (PointerTracker)msg.obj;
-                    openPopupIfRequired(msg.arg1, tracker);
+                    view.openPopupIfRequired(msg.arg1, tracker);
                     break;
                 }
             }
@@ -322,9 +332,10 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
 
         public void popupPreview(long delay, int keyIndex, PointerTracker tracker) {
             removeMessages(MSG_POPUP_PREVIEW);
-            if (mPreviewPopup.isShowing() && mPreviewText.getVisibility() == VISIBLE) {
+            LatinKeyboardBaseView view = mView.get();
+            if (view != null && view.mPreviewPopup.isShowing() && view.mPreviewText.getVisibility() == VISIBLE) {
                 // Show right away, if it's already visible and finger is moving around
-                showKey(keyIndex, tracker);
+                view.showKey(keyIndex, tracker);
             } else {
                 sendMessageDelayed(obtainMessage(MSG_POPUP_PREVIEW, keyIndex, 0, tracker),
                         delay);
@@ -336,7 +347,8 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
         }
 
         public void dismissPreview(long delay) {
-            if (mPreviewPopup.isShowing()) {
+            LatinKeyboardBaseView view = mView.get();
+            if (view != null && view.mPreviewPopup.isShowing()) {
                 sendMessageDelayed(obtainMessage(MSG_DISMISS_PREVIEW), delay);
             }
         }
@@ -535,6 +547,7 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
                 mSymbolColorScheme = a.getInt(attr, 0);
             }
         }
+        a.recycle();
 
         final Resources res = getResources();
 
@@ -1242,7 +1255,9 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
         // Retrieve and cache the popup keyboard if any.
         boolean hasPopup = (getLongPressKeyboard(key) != null);
         // Set background manually, the StateListDrawable doesn't work.
-        mPreviewText.setBackgroundDrawable(getResources().getDrawable(hasPopup ? R.drawable.keyboard_key_feedback_more_background : R.drawable.keyboard_key_feedback_background));
+        mPreviewText.setBackground(ResourcesCompat.getDrawable(getResources(),
+                hasPopup ? R.drawable.keyboard_key_feedback_more_background
+                         : R.drawable.keyboard_key_feedback_background, null));
         popupPreviewX += mOffsetInWindow[0];
         popupPreviewY += mOffsetInWindow[1];
 
@@ -1587,6 +1602,11 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
     @Override
     public boolean onTouchEvent(MotionEvent me) {
         return onTouchEvent(me, false);
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
     public boolean onTouchEvent(MotionEvent me, boolean continuing) {

@@ -84,4 +84,29 @@
 
     </declare-styleable>
 
+    <declare-styleable name="LatinKeyboardView">
+        <!-- Inherits all attributes from LatinKeyboardBaseView -->
+        <attr name="keyboardViewStyle" />
+        <attr name="keyBackground" />
+        <attr name="keyTextSize" />
+        <attr name="labelTextSize" />
+        <attr name="keyTextColor" />
+        <attr name="keyHintColor" />
+        <attr name="keyCursorColor" />
+        <attr name="invertSymbols" />
+        <attr name="recolorSymbols" />
+        <attr name="backgroundAlpha" />
+        <attr name="keyPreviewLayout" />
+        <attr name="keyPreviewOffset" />
+        <attr name="keyPreviewHeight" />
+        <attr name="keyHysteresisDistance" />
+        <attr name="verticalCorrection" />
+        <attr name="popupLayout" />
+        <attr name="shadowColor" />
+        <attr name="shadowRadius" />
+        <attr name="backgroundDimAmount" />
+        <attr name="keyTextStyle" />
+        <attr name="symbolColorScheme" />
+    </declare-styleable>
+
 </resources>

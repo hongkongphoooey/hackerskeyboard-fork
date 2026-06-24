@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import android.content.SharedPreferences;
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -205,6 +206,7 @@ public class InputLanguageSelection extends PreferenceActivity {
         }
     }
 
+    @SuppressLint("AppBundleLocaleChanges") // Temporarily probes locale to check dictionary availability
     private boolean hasDictionary(Locale locale) {
         Resources res = getResources();
         Configuration conf = res.getConfiguration();
@@ -268,17 +270,17 @@ public class InputLanguageSelection extends PreferenceActivity {
     }
 
     private static String asString(Set<String> set) {
-    	StringBuilder out = new StringBuilder();
-    	out.append("set(");
-    	String[] parts = new String[set.size()];
-    	parts = set.toArray(parts);
+        StringBuilder out = new StringBuilder();
+        out.append("set(");
+        String[] parts = new String[set.size()];
+        parts = set.toArray(parts);
         Arrays.sort(parts);
         for (int i = 0; i < parts.length; ++i) {
-    		if (i > 0) out.append(", ");
-    		out.append(parts[i]);
-    	}
-    	out.append(")");
-    	return out.toString();
+            if (i > 0) out.append(", ");
+            out.append(parts[i]);
+        }
+        out.append(")");
+        return out.toString();
     }
     
     ArrayList<Loc> getUniqueLocales() {

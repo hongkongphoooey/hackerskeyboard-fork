@@ -16,6 +16,7 @@
 
 package org.pocketworkstation.pckeyboard;
 
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 
 import android.content.Context;
@@ -112,7 +113,7 @@ public class ExpandableDictionary extends Dictionary {
         if (!mUpdatingDictionary) {
             mUpdatingDictionary = true;
             mRequiresReload = false;
-            new LoadDictionaryTask().execute();
+            new LoadDictionaryTask(this).execute();
         }
     }
 
@@ -492,12 +493,20 @@ public class ExpandableDictionary extends Dictionary {
         mRoots = new NodeArray();
     }
 
-    private class LoadDictionaryTask extends AsyncTask<Void, Void, Void> {
+    private static class LoadDictionaryTask extends AsyncTask<Void, Void, Void> {
+        private final WeakReference<ExpandableDictionary> mDictionary;
+
+        LoadDictionaryTask(ExpandableDictionary dictionary) {
+            mDictionary = new WeakReference<>(dictionary);
+        }
+
         @Override
         protected Void doInBackground(Void... v) {
-            loadDictionaryAsync();
-            synchronized (mUpdatingLock) {
-                mUpdatingDictionary = false;
+            ExpandableDictionary dict = mDictionary.get();
+            if (dict == null) return null;
+            dict.loadDictionaryAsync();
+            synchronized (dict.mUpdatingLock) {
+                dict.mUpdatingDictionary = false;
             }
             return null;
         }

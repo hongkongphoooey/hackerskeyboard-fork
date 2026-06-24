@@ -17,11 +17,13 @@
 ** limitations under the License.
 */
 -->
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
     <!-- Title for Latin keyboard  -->
-    <string name="english_ime_name">Hacker\'s Keyboard</string>
+    <string name="english_ime_name" translatable="false">Hacker\'s Keyboard</string>
     <!-- Title for Latin keyboard settings activity / dialog -->
-    <string name="english_ime_settings">Settings for Hacker\'s Keyboard</string>
+    <string name="english_ime_settings" translatable="false">Settings for Hacker\'s Keyboard</string>
     <!-- Title for Latin keyboard input options dialog -->
     <string name="english_ime_input_options">Input options</string>
 
@@ -345,17 +347,17 @@
 
     <!-- Description for keyboard theme switcher -->
     <string name="keyboard_layout">Keyboard Theme</string>
-    <string name="layout_basic" translatable="false">Basic</string>
-    <string name="layout_high_contrast" translatable="false">Basic (High Contrast)</string>
-    <string name="layout_stone_bold"  translatable="false">Stone (bold)</string>
-    <string name="layout_stone_normal"  translatable="false">Stone (normal)</string>
-    <string name="layout_gingerbread"  translatable="false">Gingerbread</string>
-    <string name="layout_ics"  translatable="false">Ice Cream Sandwich (bright hints)</string>
-    <string name="layout_ics_darker"  translatable="false">Ice Cream Sandwich (dark hints)</string>
-    <string name="layout_trans"  translatable="false">Transparent</string>
-    <string name="layout_trans_neon"  translatable="false">Transparent (experimental)</string>
+    <string name="layout_basic">Basic</string>
+    <string name="layout_high_contrast">Basic (High Contrast)</string>
+    <string name="layout_stone_bold">Stone (bold)</string>
+    <string name="layout_stone_normal">Stone (normal)</string>
+    <string name="layout_gingerbread">Gingerbread</string>
+    <string name="layout_ics">Ice Cream Sandwich (bright hints)</string>
+    <string name="layout_ics_darker">Ice Cream Sandwich (dark hints)</string>
+    <string name="layout_trans">Transparent</string>
+    <string name="layout_trans_neon">Transparent (experimental)</string>
 	<string name="layout_material_black" translatable="false">Material Black</string>
-    <string name="layout_material_dark" translatable="false">Material Dark</string>
+    <string name="layout_material_dark">Material Dark</string>
     <string name="layout_material_light" translatable="false">Material Light</string>
 
     <string-array name="keyboard_layout_modes" translatable="false">
@@ -677,6 +679,7 @@
     <string name="seek_pref_max">100%</string>
     <string name="notification_channel_name">Hacker\'s Keyboard</string>
     <string name="notification_channel_description">Hacker\'s Keyboard</string>
+    <string name="notification_action_show">Show keyboard</string>
     <string name="notification_action_settings">Settings</string>
     <!-- Default (English) values for strings only present in locale-specific files.
          AAPT2 requires every string used in a locale overlay to have a default. -->

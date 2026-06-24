@@ -18,7 +18,7 @@
 */
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/org.pocketworkstation.pckeyboard"
+<resources xmlns:tools="http://schemas.android.com/tools" 
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- <string name="english_ime_name" msgid="7252517407088836577">"Android-Tastatur"</string> -->
     <!-- <string name="english_ime_settings" msgid="6661589557206947774">"Android-Tastatureinstellungen"</string> -->
@@ -85,7 +85,7 @@
     <string name="label_alt_key" msgid="2846315350346694811">"ALT"</string>
     <string name="voice_warning_title" msgid="4419354150908395008">"Spracheingabe"</string>
     <string name="voice_warning_locale_not_supported" msgid="637923019716442333">"Spracheingaben werden derzeit nicht für Ihre Sprache unterstützt, funktionieren jedoch in Englisch."</string>
-    <string name="voice_warning_may_not_understand" msgid="4611518823070986445">"Die Spracheingabe ist eine Funktion im Versuchsstadium, die die vernetzte Spracherkennung von Google verwendet."</string>
+    <string name="voice_warning_may_not_understand" msgid="4611518823070986445" tools:ignore="Typos">"Die Spracheingabe ist eine Funktion im Versuchsstadium, die die vernetzte Spracherkennung von Google verwendet."</string>
     <string name="voice_warning_how_to_turn_off" msgid="5652369578498701761">"Wenn Sie die Spracheingabe deaktivieren möchten, rufen Sie die Tastatureinstellungen auf."</string>
     <string name="voice_hint_dialog_message" msgid="6892342981545727994">"Um die Spracheingabe zu verwenden, drücken Sie die Mikrofontaste oder ziehen Sie Ihren Finger über die Bildschirmtastatur."</string>
     <string name="voice_listening" msgid="467518160751321844">"Jetzt sprechen"</string>

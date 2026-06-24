@@ -22,6 +22,7 @@ import com.google.android.voiceime.VoiceRecognitionTrigger;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -72,6 +73,7 @@ import android.widget.Toast;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -337,22 +339,32 @@ public class LatinIME extends InputMethodService implements
         }
     }
 
-    /* package */Handler mHandler = new Handler() {
+    private static final class LatinIMEHandler extends Handler {
+        private final WeakReference<LatinIME> mService;
+
+        LatinIMEHandler(LatinIME service) {
+            mService = new WeakReference<>(service);
+        }
+
         @Override
         public void handleMessage(Message msg) {
+            LatinIME ime = mService.get();
+            if (ime == null) return;
             switch (msg.what) {
             case MSG_UPDATE_SUGGESTIONS:
-                updateSuggestions();
+                ime.updateSuggestions();
                 break;
             case MSG_UPDATE_OLD_SUGGESTIONS:
-                setOldSuggestions();
+                ime.setOldSuggestions();
                 break;
             case MSG_UPDATE_SHIFT_STATE:
-                updateShiftKeyState(getCurrentInputEditorInfo());
+                ime.updateShiftKeyState(ime.getCurrentInputEditorInfo());
                 break;
             }
         }
-    };
+    }
+
+    /* package */ Handler mHandler = new LatinIMEHandler(this);
 
     @Override
     public void onCreate() {
@@ -413,7 +425,11 @@ public class LatinIME extends InputMethodService implements
         pFilter.addAction("android.intent.action.PACKAGE_ADDED");
         pFilter.addAction("android.intent.action.PACKAGE_REPLACED");
         pFilter.addAction("android.intent.action.PACKAGE_REMOVED");
-        registerReceiver(mPluginManager, pFilter, RECEIVER_NOT_EXPORTED);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mPluginManager, pFilter, RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(mPluginManager, pFilter);
+        }
 
         LatinIMEUtil.GCUtils.getInstance().reset();
         boolean tryGC = true;
@@ -432,7 +448,11 @@ public class LatinIME extends InputMethodService implements
         // register to receive ringer mode changes for silent mode
         IntentFilter filter = new IntentFilter(
                 AudioManager.RINGER_MODE_CHANGED_ACTION);
-        registerReceiver(mReceiver, filter, RECEIVER_NOT_EXPORTED);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mReceiver, filter, RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(mReceiver, filter);
+        }
         prefs.registerOnSharedPreferenceChangeListener(this);
         setNotification(mKeyboardNotification);
     }
@@ -485,11 +505,22 @@ public class LatinIME extends InputMethodService implements
             mNotificationReceiver = new NotificationReceiver(this);
             final IntentFilter pFilter = new IntentFilter(NotificationReceiver.ACTION_SHOW);
             pFilter.addAction(NotificationReceiver.ACTION_SETTINGS);
-            registerReceiver(mNotificationReceiver, pFilter, RECEIVER_NOT_EXPORTED);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(mNotificationReceiver, pFilter, RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(mNotificationReceiver, pFilter);
+            }
             
-            Intent notificationIntent = new Intent(NotificationReceiver.ACTION_SHOW);
-            PendingIntent contentIntent = PendingIntent.getBroadcast(getApplicationContext(), 1, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-            //PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            // Tapping the notification body opens the IME settings activity
+            Intent notificationIntent = new Intent(android.provider.Settings.ACTION_INPUT_METHOD_SETTINGS);
+            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            PendingIntent contentIntent = PendingIntent.getActivity(
+                    getApplicationContext(), 1, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
+            // "Show keyboard" action triggers the broadcast receiver
+            Intent showIntent = new Intent(NotificationReceiver.ACTION_SHOW);
+            PendingIntent showPendingIntent = PendingIntent.getBroadcast(
+                    getApplicationContext(), 3, showIntent, PendingIntent.FLAG_IMMUTABLE);
 
             Intent configIntent = new Intent(NotificationReceiver.ACTION_SETTINGS);
             PendingIntent configPendingIntent =
@@ -501,12 +532,14 @@ public class LatinIME extends InputMethodService implements
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                     .setSmallIcon(R.drawable.icon_hk_notification)
                     .setColor(0xff220044)
-                    .setAutoCancel(false) //Make this notification automatically dismissed when the user touches it -> false.
+                    .setAutoCancel(false)
                     .setTicker(text)
                     .setContentTitle(title)
                     .setContentText(body)
                     .setContentIntent(contentIntent)
                     .setOngoing(true)
+                    .addAction(R.drawable.icon_hk_notification, getString(R.string.notification_action_show),
+                            showPendingIntent)
                     .addAction(R.drawable.icon_hk_notification, getString(R.string.notification_action_settings),
                             configPendingIntent)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -718,6 +751,7 @@ public class LatinIME extends InputMethodService implements
     }
     
     @Override
+    @SuppressLint("InflateParams")
     public View onCreateCandidatesView() {
         //Log.i(TAG, "onCreateCandidatesView(), mCandidateViewContainer=" + mCandidateViewContainer);
         //mKeyboardSwitcher.makeKeyboards(true);
@@ -2538,7 +2572,7 @@ public class LatinIME extends InputMethodService implements
         // If we're in basic correct
         boolean typedWordValid = mSuggest.isValidWord(typedWord)
                 || (preferCapitalization() && mSuggest.isValidWord(typedWord
-                        .toString().toLowerCase()));
+                        .toString().toLowerCase(Locale.getDefault())));
         if (mCorrectionMode == Suggest.CORRECTION_FULL
                 || mCorrectionMode == Suggest.CORRECTION_FULL_BIGRAM) {
             correctionAvailable |= typedWordValid;
@@ -2640,7 +2674,7 @@ public class LatinIME extends InputMethodService implements
 
         final boolean showingAddToDictionaryHint = index == 0
                 && mCorrectionMode > 0 && !mSuggest.isValidWord(suggestion)
-                && !mSuggest.isValidWord(suggestion.toString().toLowerCase());
+                && !mSuggest.isValidWord(suggestion.toString().toLowerCase(Locale.getDefault()));
 
         if (!correcting) {
             // Fool the state watcher so that a subsequent backspace will not do
@@ -2682,7 +2716,7 @@ public class LatinIME extends InputMethodService implements
         LatinKeyboardView inputView = mKeyboardSwitcher.getInputView();
         int shiftState = getShiftState();
         if (shiftState == Keyboard.SHIFT_LOCKED || shiftState == Keyboard.SHIFT_CAPS_LOCKED) {
-            suggestion = suggestion.toString().toUpperCase(); // all UPPERCASE
+            suggestion = suggestion.toString().toUpperCase(Locale.getDefault()); // all UPPERCASE
         }
         InputConnection ic = getCurrentInputConnection();
         if (ic != null) {
@@ -2726,7 +2760,7 @@ public class LatinIME extends InputMethodService implements
         // If we didn't find a match, at least suggest completions
         if (foundWord == null
                 && (mSuggest.isValidWord(touching.word) || mSuggest
-                        .isValidWord(touching.word.toString().toLowerCase()))) {
+                        .isValidWord(touching.word.toString().toLowerCase(Locale.getDefault())))) {
             foundWord = new WordComposer();
             for (int i = 0; i < touching.word.length(); i++) {
                 foundWord.add(touching.word.charAt(i),
@@ -2807,7 +2841,7 @@ public class LatinIME extends InputMethodService implements
             if (!addToBigramDictionary
                     && mAutoDictionary.isValidWord(suggestion)
                     || (!mSuggest.isValidWord(suggestion.toString()) && !mSuggest
-                            .isValidWord(suggestion.toString().toLowerCase()))) {
+                            .isValidWord(suggestion.toString().toLowerCase(Locale.getDefault())))) {
                 mAutoDictionary.addWord(suggestion.toString(), frequencyDelta);
             }
 

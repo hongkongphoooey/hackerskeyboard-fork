@@ -39,6 +39,7 @@ android {
 
     lintOptions {
         checkReleaseBuilds false
+        lintConfig file('lint.xml')
     }
 }
 

@@ -16,7 +16,9 @@
 
 package org.pocketworkstation.pckeyboard;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import androidx.core.content.res.ResourcesCompat;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -96,15 +98,17 @@ public class CandidateView extends View {
      */
     public CandidateView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mSelectionHighlight = context.getResources().getDrawable(
-                R.drawable.list_selector_background_pressed);
+        mSelectionHighlight = ResourcesCompat.getDrawable(context.getResources(),
+                R.drawable.list_selector_background_pressed, null);
 
         LayoutInflater inflate =
             (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Resources res = context.getResources();
         mPreviewPopup = new PopupWindow(context);
-        mPreviewText = (TextView) inflate.inflate(R.layout.candidate_preview, null);
+        @SuppressLint("InflateParams")
+        TextView previewText = (TextView) inflate.inflate(R.layout.candidate_preview, null);
+        mPreviewText = previewText;
         mPreviewPopup.setWindowLayoutMode(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         mPreviewPopup.setContentView(mPreviewText);
         mPreviewPopup.setBackgroundDrawable(null);
@@ -114,7 +118,7 @@ public class CandidateView extends View {
         mColorNormal = res.getColor(R.color.candidate_normal, null);
         mColorRecommended = res.getColor(R.color.candidate_recommended, null);
         mColorOther = res.getColor(R.color.candidate_other, null);
-        mDivider = res.getDrawable(R.drawable.keyboard_suggest_strip_divider, null);
+        mDivider = ResourcesCompat.getDrawable(res, R.drawable.keyboard_suggest_strip_divider, null);
         mAddToDictionaryHint = res.getString(R.string.hint_add_to_dictionary);
 
         mPaint = new Paint();
@@ -334,7 +338,8 @@ public class CandidateView extends View {
         mTargetScrollX = 0;
         mHaveMinimalSuggestion = haveMinimalSuggestion;
         // Compute the total width
-        onDraw(null);
+        // Trigger width recalculation without directly calling onDraw
+        requestLayout();
         invalidate();
         requestLayout();
     }
@@ -421,6 +426,7 @@ public class CandidateView extends View {
                         }
                         mService.pickSuggestionManually(mSelectedIndex, mSelectedString);
                     }
+                    performClick();
                 }
             }
             mSelectedString = null;
@@ -431,6 +437,11 @@ public class CandidateView extends View {
             break;
         }
         return true;
+    }
+
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
     private void hidePreview() {

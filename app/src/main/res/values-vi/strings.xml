@@ -18,7 +18,7 @@
 */
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/org.pocketworkstation.pckeyboard"
+<resources 
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- <string name="english_ime_name" msgid="7252517407088836577">"Bàn phím Android"</string> -->
     <!-- <string name="english_ime_settings" msgid="6661589557206947774">"Cài đặt bàn phím Android"</string> -->
@@ -63,14 +63,14 @@
     <item msgid="4894328801530136615">"Nâng cao"</item>
   </string-array>
     <string name="added_word" msgid="8993883354622484372">"<xliff:g id="WORD">%s</xliff:g> : Đã lưu"</string>
-    <string name="tip_long_press" msgid="6101270866284343344">"Giữ phím xuống để xem dấu trọng âm (ø, ö, v.v...)"</string>
+    <string name="tip_long_press" msgid="6101270866284343344">"Giữ phím xuống để xem dấu trọng âm (ø, ö, v.v…)"</string>
     <string name="tip_dismiss" msgid="7585579046862204381">"Nhấn phím quay lại ↶ để đóng bàn phím bất kỳ lúc nào"</string>
     <string name="tip_access_symbols" msgid="6344098517525531652">"Truy cập các số và ký hiệu"</string>
     <string name="tip_add_to_dictionary" msgid="1487293888469227817">"Nhấn và giữ từ ngoài cùng bên trái để thêm từ đó vào từ điển"</string>
     <string name="touch_to_continue" msgid="7869803257948414531">"Chạm vào gợi ý này để tiếp tục »"</string>
     <string name="touch_to_finish" msgid="7990196086480585789">"Chạm vào đây để đóng gợi ý này và bắt đầu nhập"</string>
     <string name="tip_to_open_keyboard" msgid="6821200275486950452"><b>"Bàn phím mở ra bất cứ khi nào bạn chạm vào trường văn bản"</b></string>
-    <string name="tip_to_view_accents" msgid="5433158573693308501"><b>"Chạm &amp; giữ phím để xem dấu trọng âm"\n"(ø, ö, ô, ó, v.v...)"</b></string>
+    <string name="tip_to_view_accents" msgid="5433158573693308501"><b>"Chạm &amp; giữ phím để xem dấu trọng âm"\n"(ø, ö, ô, ó, v.v…)"</b></string>
     <string name="tip_to_open_symbols" msgid="7345139325622444880"><b>"Chuyển sang số và ký hiệu bằng cách chạm vào phím này"</b></string>
     <string name="tip_to_close_symbols" msgid="5227724217206927185"><b>"Quay lại các chữ cái bằng cách chạm vào phím này lần nữa"</b></string>
     <string name="tip_to_launch_settings" msgid="8402961128983196128"><b>"Chạm &amp; giữ phím này để thay đổi cài đặt bàn phím, như tự động hoàn tất"</b></string>
